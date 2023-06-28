@@ -16,11 +16,10 @@ class Room {
 }
 
 class HouseService {
-    static url = " https://ancient-taiga-31359.herokuapp.com/api/houses "; 
+    static url = "https://ancient-taiga-31359.herokuapp.com/api/houses"; 
 
     static getAllHouses() {
         return $.get(this.url); 
-    
     }
     static getHouse(id) {
         return $.get(this.url + `/${id}`); 
@@ -46,9 +45,10 @@ class HouseService {
 }
 
 class DOMManager {
-    static houses; 
+    // Compare this to the video, I think there should be more to line static houses;
+    static houses = []; 
 
-    static getAllHouses(name) {
+    static getAllHouses(houses) {
         HouseService.getAllHouses().then(houses => this.render(houses));
     }
 
@@ -60,6 +60,7 @@ class DOMManager {
              .then((houses) => this.render(houses)); 
     }
     static deleteHouses(id) {
+        console.log(id); // This is just to tell us that the Id is coming through correctly.
         HouseService.deleteHouse(id) 
             .then(() => {
                 return HouseService.getAllHouses(); 
@@ -67,16 +68,15 @@ class DOMManager {
             .then((houses) => this.render(houses)); 
     }
 
-    static addRoom(id) {
-        for (let house of this.houses)
- {
-    if(house._id == id) {
+    static addRoom(id) { 
+        for (let house of this.houses) {
+    if(house._id === id.toString()) {
         house.rooms.push(new Room($(`#${house._id}-room-name`).val(), $(`#${house._id}-room-area`).val())); 
         HouseService.updateHouse(house)
             .then(() => {
                     return HouseService.getAllHouses(); 
             } )
-            .then ((houses) => this.render(houses))
+            .then ((houses) => this.render(houses));
         
         }
      }    
@@ -104,10 +104,10 @@ static deleteRoom(houseId, roomId) {
         $('#app').empty(); 
         for (let house of houses) {
             $('#app').prepend(
-                `<div id"${house._id}" class="card">
+                `<div id="${house._id}" class="card">
                 <div class="card-header">
                      <h2>${house.name}</h2>
-                     <button class="btn btn-danger" on="DOMManager.deleteHouse('${house._id}')"> Delete </button>
+                     <button class="btn btn-danger" onclick="DOMManager.deleteHouses('${house._id}')"> Delete </button>
                 </div>
                 
                 <div class="card-body">
@@ -120,7 +120,7 @@ static deleteRoom(houseId, roomId) {
                  <input type="text" id="${house._id}-room-area" class="form-control" placeholder="Room Area">
                 </div>
             </div>
-        <button id="${house._id}-new-room" on="DOMManager.addRoom('${house._id}')" class="btn btn-primary form-control">Add</button> 
+        <button id="${house._id}-new-room" onclick="DOMManager.addRoom('${house._id}')" class="btn btn-primary form-control">Add</button> 
      </div>
     </div>
 </div><br> `
@@ -129,17 +129,23 @@ static deleteRoom(houseId, roomId) {
                 $(`#${house._id}`).find('.card-body').append(
                     `<p>
                         <span id="name-${room._id}"><strong>Name: </strong> ${room.name}</span>
-                        <span id="name-${room._id}"><strong>Area: </strong> ${room.area}</span>
-                        <button class="btn btn-danger" on="DOMManager.deleteRoom('${house._id}', '${room._id}')">Delete Room</button> `
+                        <span id="area-${room._id}"><strong>Area: </strong> ${room.area}</span>
+                        <button class="btn btn-danger" onclick="DOMManager.deleteRoom('${house._id}', '${room._id}')">Delete Room</button> `
 )
             }
         }
     }
 }
 
-$('#create-new-house').on(()=> {
+function buttonClick(){
     DOMManager.createHouse($('#new-house-name').val());
-    $('#new-house-name').val(''); 
-})
+    $('#new-house-name').val('');
+}
+
+
+// $('#create-new-house').click(()=> {
+//     DOMManager.createHouse($('#new-house-name').val());
+//     $('#new-house-name').val(''); 
+// })
 
 DOMManager.getAllHouses(); 
